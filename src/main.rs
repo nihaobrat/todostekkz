@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use std::time::SystemTime;
 
-
 struct Task {
     description: String,
     completed: bool,
@@ -61,6 +60,24 @@ impl TodoList {
         tasks.sort_by(|a, b| a.completed.cmp(&b.completed));
         tasks
     }
+
+    fn count_completed_tasks(&self) -> usize {
+        self.tasks.values().filter(|task| task.completed).count()
+    }
+
+    fn count_incomplete_tasks(&self) -> usize {
+        self.tasks.values().filter(|task| !task.completed).count()
+    }
+
+    fn display_task_details(&self, task_id: u32) {
+        if let Some(task) = self.tasks.get(&task_id) {
+            println!("Task ID: {}", task_id);
+            println!("Description: {}", task.description);
+            println!("Completed: {}", task.completed);
+            let created_at = task.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
+            println!("Created At: {}", created_at);
+        }
+    }
 }
 
 fn main() {
@@ -81,4 +98,9 @@ fn main() {
     }
 
     todo_list.display_task_creation_time(3);
+
+    println!("Number of completed tasks: {}", todo_list.count_completed_tasks());
+    println!("Number of incomplete tasks: {}", todo_list.count_incomplete_tasks());
+
+    todo_list.display_task_details(2);
 }
