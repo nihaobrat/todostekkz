@@ -1,10 +1,12 @@
 use std::collections::HashMap;
-use std::time::{SystemTime, UNIX_EPOCH};
+use chrono::{DateTime, Utc};
+use std::time::SystemTime;
+
 
 struct Task {
     description: String,
     completed: bool,
-    created_at: u64,
+    created_at: DateTime<Utc>,
 }
 
 struct TodoList {
@@ -24,10 +26,7 @@ impl TodoList {
         let task = Task {
             description,
             completed: false,
-            created_at: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .expect("Failed to get system time")
-                .as_secs(),
+            created_at: DateTime::from(SystemTime::now()),
         };
 
         self.tasks.insert(self.next_id, task);
@@ -52,7 +51,7 @@ impl TodoList {
 
     fn display_task_creation_time(&self, task_id: u32) {
         if let Some(task) = self.tasks.get(&task_id) {
-            let created_at = task.created_at;
+            let created_at = task.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
             println!("Task {} was created at {}", task_id, created_at);
         }
     }
