@@ -67,13 +67,13 @@ impl TodoList {
 fn main() {
     let mut todo_list = TodoList::new();
 
-    todo_list.add_task("Buy groceries".to_string());
-    todo_list.add_task("Clean the house".to_string());
-    todo_list.add_task("Do laundry".to_string());
+    todo_list.add_task("CREATE RUST PROJECT".to_string());
+    todo_list.add_task("CREATE WORD DOC".to_string());
+    todo_list.add_task("GIT PUSH".to_string());
 
     todo_list.mark_task_as_completed(2);
 
-    todo_list.update_task(3, "Fold clothes".to_string());
+    todo_list.update_task(3, "PP CREATE".to_string());
 
     todo_list.remove_task(1);
 
