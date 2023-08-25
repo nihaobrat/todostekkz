@@ -1,0 +1,214 @@
+use std::collections::HashMap;
+use chrono::{DateTime, Utc};
+use std::time::SystemTime;
+use std::io::{self, Write};
+
+struct Task {
+    description: String,
+    completed: bool,
+    created_at: DateTime<Utc>,
+}
+
+struct TodoList {
+    tasks: HashMap<u32, Task>,
+    next_id: u32,
+}
+
+impl TodoList {
+    fn new() -> TodoList {
+        TodoList {
+            tasks: HashMap::new(),
+            next_id: 1,
+        }
+    }
+
+    fn add_task(&mut self, description: String) {
+        let task = Task {
+            description,
+            completed: false,
+            created_at: DateTime::from(SystemTime::now()),
+        };
+
+        self.tasks.insert(self.next_id, task);
+        self.next_id += 1;
+    }
+
+    fn remove_task(&mut self, task_id: u32) {
+        self.tasks.remove(&task_id);
+    }
+
+    fn update_task(&mut self, task_id: u32, description: String) {
+        if let Some(task) = self.tasks.get_mut(&task_id) {
+            task.description = description;
+        }
+    }
+
+    fn mark_task_as_completed(&mut self, task_id: u32) {
+        if let Some(task) = self.tasks.get_mut(&task_id) {
+            task.completed = true;
+        }
+    }
+
+    fn display_task_creation_time(&self, task_id: u32) {
+        if let Some(task) = self.tasks.get(&task_id) {
+            let created_at = task.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
+            println!("Task {} was created at {}", task_id, created_at);
+        }
+    }
+
+    fn sort_tasks_by_completion(&self) -> Vec<&Task> {
+        let mut tasks: Vec<&Task> = self.tasks.values().collect();
+        tasks.sort_by(|a, b| a.completed.cmp(&b.completed));
+        tasks
+    }
+
+    fn count_completed_tasks(&self) -> usize {
+        self.tasks.values().filter(|task| task.completed).count()
+    }
+
+    fn count_incomplete_tasks(&self) -> usize {
+        self.tasks.values().filter(|task| !task.completed).count()
+    }
+
+    fn display_task_details(&self, task_id: u32) {
+        if let Some(task) = self.tasks.get(&task_id) {
+            println!("Task ID: {}", task_id);
+            println!("Description: {}", task.description);
+            println!("Completed: {}", task.completed);
+            let created_at = task.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
+            println!("Created At: {}", created_at);
+        }
+    }
+}
+
+fn main() {
+    let mut todo_list = TodoList::new();
+
+    todo_list.add_task("CREATE RUST PROJECT".to_string());
+    todo_list.add_task("CREATE WORD DOC".to_string());
+    todo_list.add_task("GIT PUSH".to_string());
+
+    todo_list.mark_task_as_completed(2);
+
+    todo_list.update_task(3, "PP CREATE".to_string());
+
+    todo_list.remove_task(1);
+
+    loop {
+        println!("--- Todo List Menu ---");
+        println!("1. Add Task");
+        println!("2. Remove Task");
+        println!("3. Update Task");
+        println!("4. Mark Task as Completed");
+        println!("5. Display Task Creation Time");
+        println!("6. Sort Tasks by Completion");
+        println!("7. Count Completed Tasks");
+        println!("8. Count Incomplete Tasks");
+        println!("9. Display Task Details");
+        println!("0. Exit");
+
+        print!("Enter your choice: ");
+        io::stdout().flush().unwrap();
+
+        let mut choice = String::new();
+        io::stdin().read_line(&mut choice).unwrap();
+        let choice: u32 = match choice.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+
+        match choice {
+            1 => {
+                print!("Enter task description: ");
+                io::stdout().flush().unwrap();
+                let mut description = String::new();
+                io::stdin().read_line(&mut description).unwrap();
+                todo_list.add_task(description.trim().to_string());
+                println!("Task added successfully!");
+            }
+            2 => {
+                print!("Enter task ID to remove: ");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                todo_list.remove_task(task_id);
+                println!("Task removed successfully!");
+            }
+            3 => {
+                print!("Enter task ID to update: ");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                print!("Enter new task description: ");
+                io::stdout().flush().unwrap();
+                let mut description = String::new();
+                io::stdin().read_line(&mut description).unwrap();
+                todo_list.update_task(task_id, description.trim().to_string());
+                println!("Task updated successfully!");
+            }
+            4 => {
+                print!("Enter task ID to mark as completed: ");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                todo_list.mark_task_as_completed(task_id);
+                println!("Task marked as completed!");
+            }
+            5 => {
+                print!("Enter task ID to display creation time: ");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                todo_list.display_task_creation_time(task_id);
+            }
+            6 => {
+                println!("--- Sorted Tasks ---");
+                for task in todo_list.sort_tasks_by_completion() {
+                    println!("Task: {}, Completed: {}", task.description, task.completed);
+                }
+            }
+            7 => {
+                let count = todo_list.count_completed_tasks();
+                println!("Number of completed tasks: {}", count);
+            }
+            8 => {
+                let count = todo_list.count_incomplete_tasks();
+                println!("Number of incomplete tasks: {}", count);
+            }
+            9 => {
+                print!("Enter task ID to display details: ");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                todo_list.display_task_details(task_id);
+            }
+            0 => {
+                println!("Exiting...");
+                break;
+            }
+            _ => {
+                println!("Invalid choice. Please try again.");
+            }
+        }
+    }
+}
