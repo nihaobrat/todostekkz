@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+/*use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use std::time::SystemTime;
 
@@ -103,4 +103,231 @@ fn main() {
     println!("Number of incomplete tasks: {}", todo_list.count_incomplete_tasks());
 
     todo_list.display_task_details(2);
+}
+---------------------------------------ПРОКАЧЕННЫЙ КОД НИЖЕ----------------------------------------------------------------------------------------*/
+
+
+use std::collections::HashMap;
+use chrono::{DateTime, Utc};
+use std::time::SystemTime;
+use std::io::{self, Write};
+
+struct Task {
+    description: String,
+    completed: bool,
+    created_at: DateTime<Utc>,
+}
+
+struct TodoList {
+    tasks: HashMap<u32, Task>,
+    next_id: u32,
+}
+
+impl TodoList {
+    fn new() -> TodoList {
+        TodoList {
+            tasks: HashMap::new(),
+            next_id: 1,
+        }
+    }
+
+    fn add_task(&mut self, description: String) {
+        let task = Task {
+            description,
+            completed: false,
+            created_at: DateTime::from(SystemTime::now()),
+        };
+
+        self.tasks.insert(self.next_id, task);
+        self.next_id += 1;
+    }
+
+    fn remove_task(&mut self, task_id: u32) {
+        self.tasks.remove(&task_id);
+    }
+
+    fn update_task(&mut self, task_id: u32, description: String) {
+        if let Some(task) = self.tasks.get_mut(&task_id) {
+            task.description = description;
+        }
+    }
+
+    fn mark_task_as_completed(&mut self, task_id: u32) {
+        if let Some(task) = self.tasks.get_mut(&task_id) {
+            task.completed = true;
+        }
+    }
+
+    fn display_task_creation_time(&self, task_id: u32) {
+        if let Some(task) = self.tasks.get(&task_id) {
+            let created_at = task.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
+            println!("Задача {} была создана в {}", task_id, created_at);
+        }
+    }
+
+    fn sort_tasks_by_completion(&self) -> Vec<&Task> {
+        let mut tasks: Vec<&Task> = self.tasks.values().collect();
+        tasks.sort_by(|a, b| a.completed.cmp(&b.completed));
+        tasks
+    }
+
+    fn count_completed_tasks(&self) -> usize {
+        self.tasks.values().filter(|task| task.completed).count()
+    }
+
+    fn count_incomplete_tasks(&self) -> usize {
+        self.tasks.values().filter(|task| !task.completed).count()
+    }
+
+    fn display_task_details(&self, task_id: u32) {
+        if let Some(task) = self.tasks.get(&task_id) {
+            println!("Task ID: {}", task_id);
+            println!("Description: {}", task.description);
+            println!("Completed: {}", task.completed);
+            let created_at = task.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
+            println!("Created At: {}", created_at);
+        }
+    }
+
+    fn display_task_list(&self) {
+        println!("--- Список задач ---");
+        for (task_id, task) in &self.tasks {
+            println!("Задача {}: {}", task_id, task.description);
+        }
+    }
+}
+
+fn main() {
+    let mut todo_list = TodoList::new();
+
+    todo_list.add_task("CREATE RUST PROJECT".to_string());
+    todo_list.add_task("CREATE WORD DOC".to_string());
+    todo_list.add_task("GIT PUSH".to_string());
+
+    todo_list.mark_task_as_completed(2);
+
+
+
+    loop {
+        println!("--- Вас приветствует TODO by nihaobrat. Для продолжения выберите один из вариантов функционала...---");
+        println!("1. Создать новую задачу ");
+        println!("2. Удалить уже существующую задачу");
+        println!("3. Обновить информацию по задаче");
+        println!("4. Отметить задачу как выполненную");
+        println!("5. Установить точное время создания задачи");
+        println!("6. Сортировать задачи по степени выполнения");
+        println!("7. Выполнить подсчёт выполненных задач");
+        println!("8. Выполнить подсчёт незавершённых задач");
+        println!("9. Показать всю информацию по задаче");
+        println!("10. Показать список задач");
+
+        println!("0. Закончить работу");
+
+        print!("Итак,укажите номер нужного вам функционала: ");
+        io::stdout().flush().unwrap();
+
+        let mut choice = String::new();
+        io::stdin().read_line(&mut choice).unwrap();
+        let choice: u32 = match choice.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+
+        match choice {
+            1 => {
+                print!("Какую задачу нужно добавить: ");
+                io::stdout().flush().unwrap();
+                let mut description = String::new();
+                io::stdin().read_line(&mut description).unwrap();
+                todo_list.add_task(description.trim().to_string());
+                println!("Супер! Задача успешно добавлена!");
+            }
+            2 => {
+                print!("Укажите номер задачи,которую вы хотите заменить: ");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                todo_list.remove_task(task_id);
+                println!("Задача успешно удалена!");
+            }
+            3 => {
+                print!("Введите номер задачи,которую нужно обновить:");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                print!("Введите описание задачи: ");
+                io::stdout().flush().unwrap();
+                let mut description = String::new();
+                io::stdin().read_line(&mut description).unwrap();
+                todo_list.update_task(task_id, description.trim().to_string());
+                println!("Готово! Задача была обновлена");
+            }
+            4 => {
+                print!("Введите номер задачи,которую нужно пометить как выполненную: ");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                todo_list.mark_task_as_completed(task_id);
+                println!("Готово! Поздравляю с выполнением!");
+            }
+            5 => {
+                print!("Введите номер задачи и посмотрите когда вы её добавили: ");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                todo_list.display_task_creation_time(task_id);
+            }
+            6 => {
+                println!("--- Ваши выполненные задачи ---");
+                for task in todo_list.sort_tasks_by_completion() {
+                    println!("Задача: {}, Выполнена: {}", task.description, task.completed);
+                }
+            }
+            7 => {
+                let count = todo_list.count_completed_tasks();
+                println!("Вы выполнили уже {} задач.", count);
+            }
+            8 => {
+                let count = todo_list.count_incomplete_tasks();
+                println!("Вам осталось выполнить всего {} задач", count);
+            }
+            9 => {
+                print!("Введите номер задачи о которой хотели бы получить подробную информацию: ");
+                io::stdout().flush().unwrap();
+                let mut task_id = String::new();
+                io::stdin().read_line(&mut task_id).unwrap();
+                let task_id: u32 = match task_id.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => continue,
+                };
+                todo_list.display_task_details(task_id);
+            }
+            10 => {
+                todo_list.display_task_list();
+            }
+            0 => {
+                println!("До новых встреч!...");
+                break;
+            }
+            _ => {
+                println!("Небольшая проблемка в данный момент,попробуйте ещё разок...");
+            }
+        }
+    }
 }
