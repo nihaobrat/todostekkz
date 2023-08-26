@@ -1,3 +1,4 @@
+
 use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use std::time::SystemTime;
@@ -52,7 +53,7 @@ impl TodoList {
     fn display_task_creation_time(&self, task_id: u32) {
         if let Some(task) = self.tasks.get(&task_id) {
             let created_at = task.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
-            println!("Task {} was created at {}", task_id, created_at);
+            println!("Задача {} была создана в {}", task_id, created_at);
         }
     }
 
@@ -79,6 +80,13 @@ impl TodoList {
             println!("Created At: {}", created_at);
         }
     }
+
+    fn display_task_list(&self) {
+        println!("--- Список задач ---");
+        for (task_id, task) in &self.tasks {
+            println!("Задача {}: {}", task_id, task.description);
+        }
+    }
 }
 
 fn main() {
@@ -90,24 +98,24 @@ fn main() {
 
     todo_list.mark_task_as_completed(2);
 
-    todo_list.update_task(3, "PP CREATE".to_string());
 
-    todo_list.remove_task(1);
 
     loop {
-        println!("--- Todo List Menu ---");
-        println!("1. Add Task");
-        println!("2. Remove Task");
-        println!("3. Update Task");
-        println!("4. Mark Task as Completed");
-        println!("5. Display Task Creation Time");
-        println!("6. Sort Tasks by Completion");
-        println!("7. Count Completed Tasks");
-        println!("8. Count Incomplete Tasks");
-        println!("9. Display Task Details");
-        println!("0. Exit");
+        println!("--- Вас приветствует TODO by nihaobrat. Для продолжения выберите один из вариантов функционала...---");
+        println!("1. Создать новую задачу ");
+        println!("2. Изменить уже существующую задачу");
+        println!("3. Обновить информацию по задаче");
+        println!("4. Отметить задачу как выполненную");
+        println!("5. Установить точное время создания задачи");
+        println!("6. Сортировать задачи по степени выполнения");
+        println!("7. Выполнить подсчёт выполненных задач");
+        println!("8. Выполнить подсчёт незавершённых задач");
+        println!("9. Показать всю информацию по задаче");
+        println!("10. Показать список задач");
 
-        print!("Enter your choice: ");
+        println!("0. Закончить работу");
+
+        print!("Итак,укажите номер нужного вам функционала: ");
         io::stdout().flush().unwrap();
 
         let mut choice = String::new();
@@ -119,15 +127,15 @@ fn main() {
 
         match choice {
             1 => {
-                print!("Enter task description: ");
+                print!("Какую задачу нужно добавить: ");
                 io::stdout().flush().unwrap();
                 let mut description = String::new();
                 io::stdin().read_line(&mut description).unwrap();
                 todo_list.add_task(description.trim().to_string());
-                println!("Task added successfully!");
+                println!("Супер! Задача успешно добавлена!");
             }
             2 => {
-                print!("Enter task ID to remove: ");
+                print!("Укажите номер задачи,которую вы хотите заменить: ");
                 io::stdout().flush().unwrap();
                 let mut task_id = String::new();
                 io::stdin().read_line(&mut task_id).unwrap();
@@ -136,10 +144,10 @@ fn main() {
                     Err(_) => continue,
                 };
                 todo_list.remove_task(task_id);
-                println!("Task removed successfully!");
+                println!("Задача успешно заменена на новую!");
             }
             3 => {
-                print!("Enter task ID to update: ");
+                print!("Введите номер задачи,которую нужно обновить:");
                 io::stdout().flush().unwrap();
                 let mut task_id = String::new();
                 io::stdin().read_line(&mut task_id).unwrap();
@@ -147,15 +155,15 @@ fn main() {
                     Ok(num) => num,
                     Err(_) => continue,
                 };
-                print!("Enter new task description: ");
+                print!("Введите описание задачи: ");
                 io::stdout().flush().unwrap();
                 let mut description = String::new();
                 io::stdin().read_line(&mut description).unwrap();
                 todo_list.update_task(task_id, description.trim().to_string());
-                println!("Task updated successfully!");
+                println!("Готово! Задача была обновлена");
             }
             4 => {
-                print!("Enter task ID to mark as completed: ");
+                print!("Введите номер задачи,которую нужно пометить как выполненную: ");
                 io::stdout().flush().unwrap();
                 let mut task_id = String::new();
                 io::stdin().read_line(&mut task_id).unwrap();
@@ -164,10 +172,10 @@ fn main() {
                     Err(_) => continue,
                 };
                 todo_list.mark_task_as_completed(task_id);
-                println!("Task marked as completed!");
+                println!("Готово! Поздравляю с выполнением!");
             }
             5 => {
-                print!("Enter task ID to display creation time: ");
+                print!("Введите номер задачи и посмотрите когда вы её добавили: ");
                 io::stdout().flush().unwrap();
                 let mut task_id = String::new();
                 io::stdin().read_line(&mut task_id).unwrap();
@@ -178,21 +186,21 @@ fn main() {
                 todo_list.display_task_creation_time(task_id);
             }
             6 => {
-                println!("--- Sorted Tasks ---");
+                println!("--- Ваши выполненные задачи ---");
                 for task in todo_list.sort_tasks_by_completion() {
-                    println!("Task: {}, Completed: {}", task.description, task.completed);
+                    println!("Задача: {}, Выполнена: {}", task.description, task.completed);
                 }
             }
             7 => {
                 let count = todo_list.count_completed_tasks();
-                println!("Number of completed tasks: {}", count);
+                println!("Вы выполнили уже {} задач.", count);
             }
             8 => {
                 let count = todo_list.count_incomplete_tasks();
-                println!("Number of incomplete tasks: {}", count);
+                println!("Вам осталось выполнить всего {} задач", count);
             }
             9 => {
-                print!("Enter task ID to display details: ");
+                print!("Введите номер задачи о которой хотели бы получить подробную информацию: ");
                 io::stdout().flush().unwrap();
                 let mut task_id = String::new();
                 io::stdin().read_line(&mut task_id).unwrap();
@@ -202,12 +210,15 @@ fn main() {
                 };
                 todo_list.display_task_details(task_id);
             }
+            10 => {
+                todo_list.display_task_list();
+            }
             0 => {
-                println!("Exiting...");
+                println!("До новых встреч!...");
                 break;
             }
             _ => {
-                println!("Invalid choice. Please try again.");
+                println!("Небольшая проблемка в данный момент,попробуйте ещё разок...");
             }
         }
     }
